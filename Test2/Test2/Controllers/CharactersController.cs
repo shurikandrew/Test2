@@ -41,8 +41,8 @@ public class CharactersController : ControllerBase
     }
 
     [HttpPost("{id:int}/backpacks")]
-    public async Task<IActionResult> AddItem(List<int> )
+    public Task<IActionResult> AddItem(List<int> Listid, int id)
     {
-        
+        throw new NotImplementedException();
     }
 }
