@@ -23,8 +23,58 @@ public class CharactersService : ICharacterService
             .FirstOrDefaultAsync(ch => ch.Id == id);
     }
 
-    public Task<bool> AddItems(List<int> idList)
+    public async Task<bool> AddItems(List<int> idList, int id)
     {
-        throw new NotImplementedException();
+        foreach (var itemId in idList)
+        {
+            if (!_applicationContext.Items.Any(i => i.Id == itemId))
+            {
+                return false;
+            }
+        }
+
+        var character = await _applicationContext.Characters.Where(ch => ch.Id == id).FirstOrDefaultAsync();
+
+        if (character == null)
+        {
+            return false;
+        }
+
+        var SumWeight = 0;
+        var Items = await _applicationContext.Items.Where(i => idList.Contains(i.Id)).ToListAsync();
+        foreach (var item in Items)
+        {
+            SumWeight += item.Weight;
+        }
+
+        var capacity = character.MaxWeight - character.CurrentWeight;
+
+        if (SumWeight > capacity)
+        {
+            return false;
+        }
+
+        character.CurrentWeight += SumWeight;
+        character = await _applicationContext.Characters.Include(ch => ch.Backpacks).Where(ch=> ch.Id == id).FirstAsync();
+        foreach (var item in Items)
+        {
+            var currentItem = character.Backpacks.Where(e => e.ItemId == item.Id).FirstOrDefault();
+            if (currentItem != null)
+            {
+                currentItem.Amount += 1;
+            }
+            else
+            {
+                character.Backpacks.Add(new Backpack()
+                {
+                    CharacterId = id,
+                    Item = item,
+                    Amount = 1
+                });
+            }
+        }
+        
+        await _applicationContext.SaveChangesAsync();
+        return true;
     }
 }

@@ -5,5 +5,5 @@ namespace Test2.Services;
 public interface ICharacterService
 {
     public Task<Character> GetCharacter(int id);
-    public Task<bool> AddItems(List<int> idList);
+    public Task<bool> AddItems(List<int> idList, int id);
 }

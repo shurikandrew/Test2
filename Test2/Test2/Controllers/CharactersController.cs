@@ -41,8 +41,25 @@ public class CharactersController : ControllerBase
     }
 
     [HttpPost("{id:int}/backpacks")]
-    public Task<IActionResult> AddItem(List<int> Listid, int id)
+    public async Task<IActionResult> AddItem(List<int> Listid, int id)
     {
-        throw new NotImplementedException();
+        var isOk = await _characterService.AddItems(Listid, id);
+
+        if (!isOk)
+        {
+            return NotFound("Incorrect input. You cannot add those items to given character");
+        }
+        
+        var ItemList = _characterService
+            .GetCharacter(id).Result.Backpacks
+            .Where(e => Listid.Contains(e.Item.Id))
+            .ToList();
+        
+        return Ok(ItemList.Select(e => new NewItemDTO()
+        {
+            Amount = e.Amount,
+            ItemId = e.ItemId,
+            CharacterId = e.CharacterId
+        }));
     }
 }
